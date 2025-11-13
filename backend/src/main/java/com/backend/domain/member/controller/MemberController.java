@@ -5,7 +5,7 @@ import com.backend.domain.member.dto.request.MemberUpdateRequest;
 import com.backend.domain.member.dto.response.MemberResponse;
 import com.backend.domain.member.service.MemberService;
 import com.backend.global.response.ApiResponse;
-import com.backend.global.security.CustomUserDetails;
+import com.backend.global.security.user.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
