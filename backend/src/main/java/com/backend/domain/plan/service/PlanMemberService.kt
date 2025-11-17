@@ -56,14 +56,14 @@ class PlanMemberService(
     fun acceptInvitePlanMember(requestBody: PlanMemberAnswerRequestBody, memberPkId: Long): PlanMemberResponseBody {
         val planMember = isMyInvite(requestBody, memberPkId)
         planMember.inviteAccept()
-        planMemberRepository.save<PlanMember?>(planMember)
+        planMemberRepository.save<PlanMember>(planMember)
         return PlanMemberResponseBody(planMember)
     }
 
     fun denyInvitePlanMember(requestBody: PlanMemberAnswerRequestBody, memberPkId: Long): PlanMemberResponseBody {
         val planMember = isMyInvite(requestBody, memberPkId)
         planMember.inviteDeny()
-        planMemberRepository.save<PlanMember?>(planMember)
+        planMemberRepository.save<PlanMember>(planMember)
         return PlanMemberResponseBody(planMember)
     }
 
@@ -99,17 +99,18 @@ class PlanMemberService(
             throw BusinessException(ErrorCode.NOT_MY_PLAN)
         }
 
-        val planMember = planMemberRepository!!.findById(requestBody.planMemberId).orElseThrow<BusinessException?>(
+        val planMember = planMemberRepository.findById(requestBody.planMemberId).orElseThrow<BusinessException?>(
             Supplier { BusinessException(ErrorCode.NOT_FOUND_INVITE) }
         )
 
         return planMember
     }
 
-    fun isAvailablePlanMember(planId: Long?, member: Member): Boolean {
-        return planMemberRepository.existsByPlanIdAndMemberId(
-            planId?:throw BusinessException(ErrorCode.NOT_FOUND_PLAN),
-            member.id?:throw BusinessException(ErrorCode.INVALID_MEMBER))
+    fun isAvailablePlanMember(planId: Long, member: Member): Boolean {
+        return  planMemberRepository.existsByPlanIdAndMemberIdAndIsConfirmed(
+            planId?: throw BusinessException(ErrorCode.NOT_FOUND_PLAN),
+            member.id?: throw BusinessException(ErrorCode.INVALID_MEMBER),
+            1)
 
     //        return planMemberRepository.existsByMemberInPlanId(member.id?: throw BusinessException(ErrorCode.INVALID_MEMBER)
 //        , planId)

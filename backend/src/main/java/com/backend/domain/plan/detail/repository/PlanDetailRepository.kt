@@ -23,14 +23,17 @@ AND (:#{#detailId} IS NULL OR pd.id != :detailId)
     """)
     fun existsOverlapping(
         @Param("planId") planId: Long,
-        @Param("endTime") startTime: @NotNull LocalDateTime?,
-        @Param("startTime") endTime: LocalDateTime,
+        @Param("startTime") startTime: LocalDateTime,
+        @Param("endTime") endTime: LocalDateTime,
         @Param("detailId") detailId: Long?
     ): Boolean
 
     fun deletePlanDetailsByPlan(plan: Plan)
 
     fun getPlanDetailsByMemberId(memberId: Long): MutableList<PlanDetail>
+    fun findByTitle(title: String): MutableList<PlanDetail>
+    fun deletePlanDetailsByTitle(title: String)
+    fun deletePlanDetailById(id: Long)
 
 
 }

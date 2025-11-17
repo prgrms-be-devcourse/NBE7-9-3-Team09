@@ -1,11 +1,16 @@
 package com.backend.domain.plan.service;
 
+import com.backend.domain.member.entity.Member;
+import com.backend.domain.member.entity.Role;
 import com.backend.domain.member.repository.MemberRepository;
 import com.backend.domain.plan.dto.PlanCreateRequestBody;
 import com.backend.domain.plan.dto.PlanResponseBody;
 import com.backend.domain.plan.dto.PlanUpdateRequestBody;
 import com.backend.domain.plan.entity.Plan;
 import com.backend.domain.plan.repository.PlanRepository;
+import com.backend.global.exception.BusinessException;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -14,11 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.annotation.BeforeTestExecution;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,6 +46,11 @@ public class PlanServiceTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @BeforeAll
+    static void setup() {
+
+    }
 
     @Test
     @DisplayName("1. 1번 계획의 존재 여부 테스트")
@@ -61,8 +76,8 @@ public class PlanServiceTest {
         PlanCreateRequestBody planCreateRequestBody = new PlanCreateRequestBody(
                 "test1",
                 "테스트",
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2)
+                LocalDateTime.now().plusDays(2),
+                LocalDateTime.now().plusDays(3)
         );
 
         planService.createPlan(planCreateRequestBody,1L);
@@ -107,12 +122,62 @@ public class PlanServiceTest {
     @DisplayName("6. 오늘 계획 조회")
     void t6(){
         PlanResponseBody planResponseBody = planService.getTodayPlan(1L);
-        Plan plan = planRepository.getPlanByStartDateBeforeAndEndDateAfter(LocalDateTime.now().toLocalDate().atStartOfDay().plusSeconds(1),LocalDateTime.now().toLocalDate().atTime(LocalTime.MAX).minusSeconds(1));
+        Plan plan = planRepository.getPlanByStartDateBeforeAndEndDateAfterAndMemberId(LocalDateTime.now().toLocalDate().atStartOfDay().plusSeconds(1),LocalDateTime.now().toLocalDate().atTime(LocalTime.MAX).minusSeconds(1),1L);
 
         PlanResponseBody toBePlanResponseBody =  new PlanResponseBody(plan);
 
         assertThat(planResponseBody.title).isEqualTo(toBePlanResponseBody.title);
 
     }
+
+    @Test
+    @DisplayName("7. 동시 수정 테스트")
+    void t7() throws InterruptedException {
+
+        //given
+        int numThreads = 4; // 동시에 4번의 입력이 있다고 가정
+
+        CountDownLatch doneSignal = new CountDownLatch(numThreads);
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+
+        PlanUpdateRequestBody planUpdateRequestBody = new PlanUpdateRequestBody(
+                1L,
+                "수정계획",
+                "수정내용",
+                LocalDateTime.now(),
+                LocalDateTime.now().plusDays(2L)
+        );
+
+        //when
+        for(int i = 0; i < numThreads; i++){
+            executorService.execute(()->{
+                try {
+                    planService.updatePlan(
+                            1L,
+                            planUpdateRequestBody,
+                            1L
+                            );
+                    successCount.getAndIncrement();
+                    log.info("성공");
+                } catch (BusinessException e){
+                    log.error(e.getMessage());
+                    failCount.getAndIncrement();
+                }finally {
+                    doneSignal.countDown();
+                }
+            });
+        }
+        doneSignal.await();
+        executorService.shutdown();
+
+        //then
+        assertThat(successCount.get()).isEqualTo(1);
+        assertThat(failCount.get()).isEqualTo(3);
+    }
+
+
 
 }

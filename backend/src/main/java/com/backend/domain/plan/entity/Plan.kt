@@ -18,7 +18,8 @@ class Plan(
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     title: String,
-    content: String
+    content: String,
+    version: Long? = null,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +49,9 @@ class Plan(
     @OneToMany(mappedBy = "plan", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
     val planMembers: MutableList<PlanMember?> = ArrayList<PlanMember?>()
 
+    @Version
+    val version: Long? = version
+
     fun updatePlan(planUpdateRequestBody: PlanUpdateRequestBody, member: Member): Plan {
         return Plan(
             this.id,
@@ -58,6 +62,7 @@ class Plan(
             endOfDay(planUpdateRequestBody.endDate),
             planUpdateRequestBody.title,
             planUpdateRequestBody.content,
+            this.version
         )
     }
 

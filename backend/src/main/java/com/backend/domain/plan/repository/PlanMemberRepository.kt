@@ -55,6 +55,7 @@ AND pm.member.id = :memberId
     fun getPlanMembersByMemberId(memberId: Long): List<PlanMember>
     fun findByPlan_IdAndMember_Id(planId: Long, memberId: Long): PlanMember
     fun getPlanMembersByMemberIdAndPlan_Id(memberId: Long, planId: Long): MutableList<PlanMember>
+    fun existsByPlanIdAndMemberIdAndIsConfirmed(planId: Long, memberId: Long, isConfirmed: Int): Boolean
 
 
 }

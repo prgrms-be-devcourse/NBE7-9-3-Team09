@@ -26,7 +26,7 @@ class PlanDetailController(
 
     @PostMapping("/add")
     fun addPlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody planDetailRequestBody: @Valid PlanDetailRequestBody
     ): ApiResponse<PlanDetailResponseBody> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -39,7 +39,7 @@ class PlanDetailController(
 
     @GetMapping("/{planDetailId}")
     fun getPlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable planDetailId: @NotNull Long
     ): ApiResponse<PlanDetailsElementBody> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -53,18 +53,17 @@ class PlanDetailController(
 
     @GetMapping("/{planId}/list")
     fun getAllPlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable planId: @NotNull Long
     ): ApiResponse<List<PlanDetailsElementBody>> {
         val memberPkId = authService.getMemberId(accessToken)
-
         val planDetailsElementBodies = planDetailService.getPlanDetailsByPlanId(planId, memberPkId)
         return success<List<PlanDetailsElementBody>>(planDetailsElementBodies,"계획 상세 조회에 성공했습니다.")
     }
 
     @GetMapping("/{planId}/todaylist")
     fun getTodayPlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable planId: @NotNull Long
     ): ApiResponse<List<PlanDetailsElementBody>?> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -75,7 +74,7 @@ class PlanDetailController(
 
     @PatchMapping("/update/{planDetailId}")
     fun updatePlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable planDetailId: @NotNull Long,
         @RequestBody planDetailRequestBody: @Valid PlanDetailRequestBody
     ): ApiResponse<PlanDetailResponseBody> {
@@ -90,7 +89,7 @@ class PlanDetailController(
 
     @DeleteMapping("/delete/{detailId}")
     fun deletePlanDetail(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable detailId: @NotNull Long
     ): ApiResponse<Null?> {
         val memberPkId = authService.getMemberId(accessToken)

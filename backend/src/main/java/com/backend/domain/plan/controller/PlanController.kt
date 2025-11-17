@@ -30,7 +30,7 @@ class PlanController(
     @PostMapping("/create")
     @Operation(summary = "여행 계획을 생성합니다.", description = "여행 계획을 생성합니다.")
     fun create(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody planCreateRequestBody: @Valid PlanCreateRequestBody
     ): ApiResponse<PlanResponseBody> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -42,7 +42,7 @@ class PlanController(
 
     @GetMapping("/list")
     fun getList(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String
     ): ApiResponse<List<PlanResponseBody>> {
         val memberPkId = authService.getMemberId(accessToken)
         val plans: List<PlanResponseBody> = planService.getPlanList(memberPkId)
@@ -52,7 +52,7 @@ class PlanController(
     //초대가 승낙된 모임만 표시
     @GetMapping("/myInvitedPlan")
     fun getMyInvitedPlan(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String
     ): ApiResponse<List<PlanResponseBody>> {
         val memberPkId = authService.getMemberId(accessToken)
         val plans: List<PlanResponseBody> = planService.getInvitedAcceptedPlan(memberPkId)
@@ -61,7 +61,7 @@ class PlanController(
 
     @GetMapping("/todayPlan")
     fun getTodayPlan(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String
     ): ApiResponse<PlanResponseBody?> {
         val memberPkId = authService.getMemberId(accessToken)
         return success<PlanResponseBody?>(planService.getTodayPlan(memberPkId))
@@ -69,7 +69,7 @@ class PlanController(
 
     @PatchMapping("/update/{planId}")
     fun updatePlan(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody planUpdateRequestBody: @Valid PlanUpdateRequestBody,
         @PathVariable planId: Long
     ): ApiResponse<PlanResponseBody?> {
@@ -91,7 +91,7 @@ class PlanController(
 
     @DeleteMapping("/delete/{planId}")
     fun deletePlan(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @PathVariable planId: @NotNull Long
     ): ResponseEntity<*> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -102,7 +102,7 @@ class PlanController(
 
     @PostMapping("/member/invite")
     fun inviteMember(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody memberRequestBody: @Valid PlanMemberAddRequestBody
     ): ApiResponse<PlanMemberResponseBody?> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -112,7 +112,7 @@ class PlanController(
 
     @GetMapping("/member/mylist")
     fun getMyPlanMember(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String
     ): ApiResponse<List<PlanMemberMyResponseBody>> {
         val memberPkId = authService.getMemberId(accessToken)
         return success<List<PlanMemberMyResponseBody>>(planMemberService.myInvitedPlanList(memberPkId))
@@ -120,7 +120,7 @@ class PlanController(
 
     @PatchMapping("/member/accept")
     fun acceptMember(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody memberAnswerRequestBody: @Valid PlanMemberAnswerRequestBody
     ): ApiResponse<PlanMemberResponseBody?> {
         val memberPkId = authService.getMemberId(accessToken)
@@ -131,7 +131,7 @@ class PlanController(
 
     @PatchMapping("/member/deny")
     fun denyMember(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) accessToken: String,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION) accessToken: String,
         @RequestBody memberAnswerRequestBody: @Valid PlanMemberAnswerRequestBody
     ): ApiResponse<PlanMemberResponseBody?> {
         val memberPkId = authService.getMemberId(accessToken)
