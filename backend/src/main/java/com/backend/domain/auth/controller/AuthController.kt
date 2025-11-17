@@ -31,7 +31,6 @@ class AuthController(
         return created(tokenResponse)
     }
 
-    //TODO: 토큰을 헤더로 보낼지, 바디로 보낼지 결정
     @PostMapping("/reissue")
     fun reissue(
         @CookieValue(value = "refreshToken", required = false) refreshToken: String?,

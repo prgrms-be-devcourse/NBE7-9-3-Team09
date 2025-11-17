@@ -26,13 +26,5 @@ data class MemberSignupRequest(
     @field:NotBlank(message = "닉네임은 필수 입력값입니다.")
     val nickname: String
 ) {
-    fun toEntity(encodedPassword: String): Member =
-        Member(
-            memberId = memberId,
-            password = encodedPassword,
-            email = email,
-            nickname = nickname,
-            role = Role.USER
-        )
 
 }

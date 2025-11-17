@@ -1,9 +1,9 @@
 package com.backend.domain.member.repository
 
 import com.backend.domain.member.entity.Member
+import com.backend.domain.member.entity.Provider
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.util.*
 
 @Repository
 interface MemberRepository : JpaRepository<Member, Long> {
@@ -13,4 +13,7 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun existsByEmail(email: String): Boolean
     fun existsByNickname(nickname: String): Boolean
 
+    // provider + providerId 로 회원 조회
+    fun findByProviderAndProviderId(provider: Provider, providerId: String): Member?
+    fun existsByProviderAndProviderId(provider: Provider, providerId: String): Boolean
 }

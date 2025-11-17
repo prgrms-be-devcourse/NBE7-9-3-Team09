@@ -11,5 +11,4 @@ data class MemberLoginRequest(
     @field:NotBlank(message = "비밀번호는 필수 입력값입니다.")
     @field:Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
     val password: String
-
 )

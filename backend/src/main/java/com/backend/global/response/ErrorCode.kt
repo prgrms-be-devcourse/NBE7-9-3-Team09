@@ -66,6 +66,11 @@ enum class ErrorCode(
     MISMATCH_REFRESH_TOKEN("A004", HttpStatus.UNAUTHORIZED, "저장된 리프레시 토큰과 일치하지 않습니다."),
 
     INVALID_ACCESS_TOKEN("A010", HttpStatus.UNAUTHORIZED, "유효하지 않은 액세스 토큰입니다."),
-    EXPIRED_ACCESS_TOKEN("A009", HttpStatus.UNAUTHORIZED, "액세스 토큰이 만료되었습니다.");
+    EXPIRED_ACCESS_TOKEN("A009", HttpStatus.UNAUTHORIZED, "액세스 토큰이 만료되었습니다."),
+
+    INVALID_TOKEN("A009",HttpStatus.UNAUTHORIZED,  "유효하지 않은 임시 토큰입니다."),
+
+    // OAuth Provider
+    UNSUPPORTED_OAUTH_PROVIDER("A018", HttpStatus.BAD_REQUEST, "지원하지 않는 OAuth Provider입니다.");
 
 }

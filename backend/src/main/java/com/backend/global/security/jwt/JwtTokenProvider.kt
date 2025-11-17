@@ -1,6 +1,9 @@
 package com.backend.global.security.jwt
 
+import com.backend.domain.member.entity.Provider
 import com.backend.domain.member.entity.Role
+import com.backend.global.security.oauth.dto.OAuth2TempClaims
+import com.backend.global.security.oauth.util.OAuth2TempTokenParser
 import com.backend.global.security.user.CustomUserDetails
 import com.backend.global.security.user.CustomUserDetailsService
 import io.jsonwebtoken.Claims
@@ -30,7 +33,10 @@ class JwtTokenProvider(
     private val accessTokenExpireTimeMs: Long,
 
     @Value("\${custom.jwt.refresh-token.expire-time}")
-    private val refreshTokenExpireTimeMs: Long
+    private val refreshTokenExpireTimeMs: Long,
+
+    @Value("\${custom.jwt.temp-token.expire-time}")
+    private val tempTokenExpireMs: Long
 ) {
 
     private lateinit var key: SecretKey
@@ -41,23 +47,61 @@ class JwtTokenProvider(
     }
 
     /** Access Token 생성 */
-    fun generateAccessToken(memberId: Long, role: Role): String =
-        generateToken(memberId, role, accessTokenExpireTimeMs, "access")
+    fun generateAccessToken(memberId: Long, role: Role): String {
+        return generateToken(
+            subject = memberId.toString(),
+            claims = mapOf(
+                "role" to role.name,
+                "type" to TokenType.ACCESS.name
+            ),
+            expireTime = accessTokenExpireTimeMs
+        )
+    }
 
     /** Refresh Token 생성 */
-    fun generateRefreshToken(memberId: Long, role: Role): String =
-        generateToken(memberId, role, refreshTokenExpireTimeMs, "refresh")
+    fun generateRefreshToken(memberId: Long, role: Role): String {
+        return generateToken(
+            subject = memberId.toString(),
+            claims = mapOf(
+                "role" to role.name,
+                "type" to TokenType.REFRESH.name
+            ),
+            expireTime = refreshTokenExpireTimeMs
+        )
+    }
+
+    /** ⭐ 소셜 회원가입 임시 토큰 (provider / providerId / email 기반) */
+    fun generateOAuth2TempToken(
+        provider: Provider,
+        providerId: String,
+        email: String
+    ): String {
+        return generateToken(
+            subject = providerId,
+            claims = mapOf(
+                "provider" to provider.name,
+                "providerId" to providerId,
+                "email" to email,
+                "type" to TokenType.OAUTH2_TEMP.name
+            ),
+            expireTime = tempTokenExpireMs
+        )
+    }
 
     /** 공통 토큰 생성 로직 */
-    private fun generateToken(memberId: Long, role: Role, expireTime: Long, type: String): String {
+    private fun generateToken(
+        subject: String,
+        claims: Map<String, Any>,
+        expireTime: Long
+    ): String {
         val now = Date()
         val expiry = Date(now.time + expireTime)
+
         return Jwts.builder()
-            .subject(memberId.toString())
+            .subject(subject)
             .issuedAt(now)
             .expiration(expiry)
-            .claim("role", role.name)
-            .claim("type", type)
+            .claims(claims)
             .signWith(key)
             .compact()
     }
@@ -65,7 +109,10 @@ class JwtTokenProvider(
     /** 토큰 유효성 검증 (서명 및 만료 확인) */
     fun validateTokenStatus(token: String): TokenStatus =
         try {
-            Jwts.parser().verifyWith(key).build().parse(token)
+            Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parse(token)
             TokenStatus.VALID
         } catch (e: ExpiredJwtException) {
             log.info("== 토큰이 만료되었습니다 ==")
@@ -95,13 +142,14 @@ class JwtTokenProvider(
         Role.valueOf(parseClaims(token)["role"].toString())
 
     /** 토큰 타입 조회 (access / refresh) */
-    fun getTokenType(token: String): String =
-        parseClaims(token)["type"]?.toString() ?: "unknown"
+    fun getTokenType(token: String): TokenType =
+        TokenType.valueOf(parseClaims(token)["type"].toString())
 
     /** JWT → Authentication 변환 */
     fun getAuthentication(token: String): Authentication {
         val memberPk = getMemberIdFromToken(token)
         val userDetails = customUserDetailsService.loadUserById(memberPk) as CustomUserDetails
+
         return UsernamePasswordAuthenticationToken(
             userDetails,
             null,
@@ -117,4 +165,6 @@ class JwtTokenProvider(
         private val log = LoggerFactory.getLogger(JwtTokenProvider::class.java)
     }
 
+    fun parseOAuthClaims(token: String): Claims =
+        parseClaims(token)
 }

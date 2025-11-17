@@ -8,7 +8,9 @@ data class ResponsePlaceDto(
     val address: String?,
     val gu: String?,
     val category: String,
-    val description: String?
+    val description: String?,
+    val latitude: Double?,
+    val longitude: Double?
 ) {
     companion object {
         fun from(place: Place): ResponsePlaceDto =
@@ -18,7 +20,9 @@ data class ResponsePlaceDto(
                 address = place.address,
                 gu = place.gu,
                 category = place.category.name,
-                description = place.description
+                description = place.description,
+                latitude = place.latitude,
+                longitude = place.longitude
             )
     }
 }

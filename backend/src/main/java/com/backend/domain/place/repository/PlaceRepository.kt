@@ -12,4 +12,6 @@ interface PlaceRepository : JpaRepository<Place, Long> {
     fun getPlaceById(id: Long): Place
 
     fun findByCategory_Name(name: String): List<Place>
+
+    fun findTop100ByLatitudeIsNullOrderByIdAsc(): List<Place>
 }

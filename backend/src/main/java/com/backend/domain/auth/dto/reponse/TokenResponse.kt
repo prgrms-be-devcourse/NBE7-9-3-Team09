@@ -1,6 +1,5 @@
 package com.backend.domain.auth.dto.reponse
 
-@JvmRecord
 data class TokenResponse(
     val accessToken: String,
     val refreshToken: String,
@@ -8,13 +7,18 @@ data class TokenResponse(
     val role: String
 ) {
     companion object {
-        fun of(
+        fun fromTokens(
             accessToken: String,
             refreshToken: String,
-            refreshTokenMaxAge:
-            Long, role: String
+            refreshTokenMaxAge: Long,
+            role: String
         ): TokenResponse {
-            return TokenResponse(accessToken, refreshToken, refreshTokenMaxAge, role)
+            return TokenResponse(
+                accessToken,
+                refreshToken,
+                refreshTokenMaxAge,
+                role
+            )
         }
     }
 }

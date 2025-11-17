@@ -4,15 +4,26 @@ import com.backend.global.entity.BaseEntity
 import jakarta.persistence.*
 import lombok.*
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity
 @Table(name = "member")
 class Member(
+
+    /* === 소셜 로그인 정보 === */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true, length = 20)
+    var provider: Provider? = null,  // LOCAL, KAKAO, GOOGLE…
+
+    @Column(nullable = true, unique = true)
+    var providerId: String? = null, // 소셜 로그인 고유 ID (카카오: kakao id)
+
+    /* === 일반/소셜 공통 정보 === */
     @Column(nullable = false, unique = true, length = 30)
-    val memberId: String, // 로그인용 아이디
+    val memberId: String, // 로그인용 아이디 / 카카오: 자동 생성
 
     @Column(nullable = false)
-    var password: String, // 암호화된 비밀번호
+    var password: String, // 암호화된 비밀번호 / 카카오: "{SOCIAL_LOGIN}"
 
     @Column(nullable = false, unique = true, length = 200)
     var email: String, // 중복 가입 방지
@@ -22,7 +33,7 @@ class Member(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    var role: Role,
+    var role: Role = Role.USER,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -37,6 +48,8 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
         protected set // 외부 수정 금지 (DB에서 자동 생성만 허용)
+
+    /* === 비즈니스 로직 === */
 
     val isDeleted: Boolean
         get() = deletedAt != null
@@ -59,11 +72,49 @@ class Member(
         this.email = newEmail
     }
 
-    // === Builder 사용을 위한 팩토리 ===
+    /* === 정적 팩토리: 일반 회원 생성 === */
     companion object {
+        fun createLocal(
+            memberId: String,
+            password: String,
+            email: String,
+            nickname: String
+        ): Member {
+            return Member(
+                provider = Provider.LOCAL,
+                providerId = null,
+                memberId = memberId,
+                password = password,
+                email = email,
+                nickname = nickname,
+                role = Role.USER,
+                status = MemberStatus.ACTIVE
+            )
+        }
+
+        /* === 정적 팩토리: 카카오 회원 생성 === */
+        fun createKakao(
+            providerId: String,
+            email: String,
+            nickname: String
+        ): Member {
+            return Member(
+                provider = Provider.KAKAO,
+                providerId = providerId,
+                memberId = "social_" + java.util.UUID.randomUUID().toString().replace("-", "").take(16),      // 자동 생성
+                password = "{SOCIAL_LOGIN}",         // 소셜 회원 dummy PW
+                email = email,
+                nickname = nickname,
+                role = Role.USER,
+                status = MemberStatus.ACTIVE
+            )
+        }
+
         @JvmStatic
         fun builder() = Builder()
     }
+
+    // === Builder 사용을 위한 팩토리 ===
 
     class Builder {
         private var id: Long? = null
@@ -96,5 +147,4 @@ class Member(
             )
         }
     }
-
 }

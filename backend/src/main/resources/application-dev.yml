@@ -14,5 +14,8 @@ seoul:
     key: ${SEOUL_API_KEY}
     base-url: http://openapi.seoul.go.kr:8088
 
+kakao:
+  rest-api-key: ${KAKAO_REST_API_KEY}
+
 modelrestaurant:
   districts: ydp,yangcheon,ddm,dongjak

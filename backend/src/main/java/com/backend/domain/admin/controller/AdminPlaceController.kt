@@ -5,12 +5,10 @@ import com.backend.domain.place.dto.RequestPlaceDto
 import com.backend.domain.place.dto.ResponsePlaceDto
 import com.backend.global.response.ApiResponse
 import com.backend.global.response.ApiResponse.Companion.success
-import lombok.RequiredArgsConstructor
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/admin/places")
-@RequiredArgsConstructor
 class AdminPlaceController(
     private val adminPlaceService: AdminPlaceService
 ) {

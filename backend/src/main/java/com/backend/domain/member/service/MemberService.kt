@@ -7,17 +7,13 @@ import com.backend.domain.member.entity.Member
 import com.backend.domain.member.repository.MemberRepository
 import com.backend.global.exception.BusinessException
 import com.backend.global.response.ErrorCode
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.function.Supplier
 
 @Service
-@RequiredArgsConstructor
 @Transactional
-@Slf4j
 class MemberService(
     private val memberRepository: MemberRepository,
     private val passwordEncoder: PasswordEncoder
@@ -29,8 +25,14 @@ class MemberService(
         // 비밀번호 암호화
         val encodedPassword = passwordEncoder.encode(request.password)
 
-        val member = request.toEntity(encodedPassword)
-        memberRepository.save<Member?>(member)
+        val member = Member.createLocal(
+            memberId = request.memberId,
+            password = encodedPassword,
+            email = request.email,
+            nickname = request.nickname
+        )
+
+        memberRepository.save(member)
 
         return MemberResponse.from(member)
     }

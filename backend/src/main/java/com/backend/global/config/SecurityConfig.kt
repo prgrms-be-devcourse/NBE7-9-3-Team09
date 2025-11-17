@@ -3,6 +3,8 @@ package com.backend.global.config
 import com.backend.global.security.jwt.JwtAuthenticationFilter
 import com.backend.global.security.jwt.handler.JwtAccessDeniedHandler
 import com.backend.global.security.jwt.handler.JwtAuthenticationEntryPoint
+import com.backend.global.security.oauth.service.CustomOAuth2UserService
+import com.backend.global.security.oauth.handler.OAuth2SuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -25,7 +27,10 @@ import java.lang.Exception
 open class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
-    private val jwtAccessDeniedHandler: JwtAccessDeniedHandler
+    private val jwtAccessDeniedHandler: JwtAccessDeniedHandler,
+
+    private val customOAuth2UserService: CustomOAuth2UserService,
+    private val oAuth2SuccessHandler: OAuth2SuccessHandler
 ) {
     @Bean
     @Throws(Exception::class)
@@ -62,6 +67,12 @@ open class SecurityConfig(
                     .accessDeniedHandler(jwtAccessDeniedHandler)
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .oauth2Login { oauth ->
+                oauth.userInfoEndpoint { endpoint ->
+                    endpoint.userService(customOAuth2UserService)
+                }
+                oauth.successHandler(oAuth2SuccessHandler)
+            }
             .headers { it.frameOptions { frame -> frame.disable() } }
 
         return http.build()

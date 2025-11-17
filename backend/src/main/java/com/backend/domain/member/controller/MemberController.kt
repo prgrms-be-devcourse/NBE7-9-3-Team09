@@ -7,12 +7,10 @@ import com.backend.domain.member.service.MemberService
 import com.backend.global.response.ApiResponse
 import com.backend.global.security.user.CustomUserDetails
 import jakarta.validation.Valid
-import lombok.RequiredArgsConstructor
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("api/members")
 class MemberController(
     private val memberService: MemberService

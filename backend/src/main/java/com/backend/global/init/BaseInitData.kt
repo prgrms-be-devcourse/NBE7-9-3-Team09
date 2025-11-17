@@ -4,6 +4,7 @@ import com.backend.domain.member.entity.Member
 import com.backend.domain.member.entity.Role
 import com.backend.domain.member.repository.MemberRepository
 import com.backend.domain.place.repository.PlaceRepository
+import com.backend.domain.place.service.PlaceGeoService
 import com.backend.domain.plan.detail.dto.PlanDetailRequestBody
 import com.backend.domain.plan.detail.entity.PlanDetail
 import com.backend.domain.plan.detail.repository.PlanDetailRepository
@@ -12,6 +13,8 @@ import com.backend.domain.plan.entity.PlanMember
 import com.backend.domain.plan.repository.PlanMemberRepository
 import com.backend.domain.plan.repository.PlanRepository
 import com.backend.external.seoul.hotel.controller.HotelImportController
+import com.backend.external.seoul.modelrestaurant.controller.ModelRestaurantImportController
+import com.backend.external.seoul.nightspot.controller.controller.NightSpotImportController
 import com.backend.global.exception.BusinessException
 import com.backend.global.response.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -31,9 +34,13 @@ class BaseInitData(
     private val planRepository: PlanRepository,
     private val planMemberRepository: PlanMemberRepository,
     private val hotelImportController: HotelImportController,
+    private val nightSpotImportController: NightSpotImportController,
+    private val modelRestaurantImportController: ModelRestaurantImportController,
     private val placeRepository: PlaceRepository,
     private val planDetailRepository: PlanDetailRepository,
-) {
+    private val placeGeoService: PlaceGeoService,
+
+    ) {
     private val log = KotlinLogging.logger {}
 
     @Bean
@@ -41,29 +48,28 @@ class BaseInitData(
         return ApplicationRunner { args: ApplicationArguments? ->
             if (memberRepository.count() == 0L) {
 
-                val member1 = Member(
+                val member1 = Member.createLocal(
                     memberId = "member1",
                     password = passwordEncoder.encode("1111"),
                     email = "member1@gmail.com",
                     nickname = "사용자1",
-                    role = Role.USER,
                 )
 
-                val member2 = Member(
+                val member2 = Member.createLocal(
                     memberId = "member2",
                     password = passwordEncoder.encode("2222"),
                     email = "member2@gmail.com",
                     nickname = "사용자2",
-                    role = Role.USER
                 )
 
-                val admin = Member(
+                val admin = Member.createLocal(
                     memberId = "admin",
                     password = passwordEncoder.encode("admin1234"),
                     email = "admin@gmail.com",
                     nickname = "관리자",
+                ).apply {
                     role = Role.ADMIN
-                )
+                }
 
                 memberRepository.saveAll(List.of(member1, member2, admin))
                 log.info { "초기 member 데이터 세팅 완료: " }
@@ -71,6 +77,15 @@ class BaseInitData(
             if(placeRepository.count() == 0L) {
                 hotelImportController.importHotels();
                 log.info { "초기 호텔 데이터 세팅 완료 " }
+
+                nightSpotImportController.importNightSpots()
+                log.info { "야경명소 Import 완료" }
+
+                modelRestaurantImportController.importAll()
+                log.info { "초기 모범음식점 데이터 세팅 완료" }
+
+                val filledCount = placeGeoService.fillAllMissingCoordinates()
+                log.info { "초기 Place 좌표 세팅 완료: $filledCount 개" }
             }
 
             if (planRepository.count() == 0L) {
@@ -107,7 +122,6 @@ class BaseInitData(
                     "초기 일정 데이터2",
                     "초기 일정 데이터 내용2"
                 )
-
 
                 planRepository.saveAll(List.of<Plan>(plan1, plan2, plan3))
 

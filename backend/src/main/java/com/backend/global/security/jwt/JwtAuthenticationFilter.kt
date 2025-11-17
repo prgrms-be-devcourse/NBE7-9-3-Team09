@@ -6,7 +6,6 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import lombok.RequiredArgsConstructor
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -15,7 +14,6 @@ import java.io.IOException
 import java.lang.Exception
 
 @Component
-@RequiredArgsConstructor
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     private val jwtErrorResponseWriter: JwtErrorResponseWriter
@@ -59,7 +57,7 @@ class JwtAuthenticationFilter(
             when (jwtTokenProvider.validateTokenStatus(token)) {
                 TokenStatus.VALID -> {
                     val tokenType = jwtTokenProvider.getTokenType(token)
-                    if (tokenType != "access") {
+                    if (tokenType != TokenType.ACCESS) {
                         log.warn { "[JWT] Refresh Token으로 접근 시도 차단: $requestURI" }
                         jwtErrorResponseWriter.write(response, ErrorCode.INVALID_ACCESS_TOKEN)
                         return
@@ -91,5 +89,4 @@ class JwtAuthenticationFilter(
             jwtErrorResponseWriter.write(response, ErrorCode.UNAUTHORIZED_REQUEST)
         }
     }
-
 }

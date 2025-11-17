@@ -52,7 +52,7 @@ interface PlanRepository : JpaRepository<Plan?, Long?> {
         WHERE 
         p.member.id = :memberId
         AND NOT 
-        (:endTime <= p.startDate OR :startTime >= p.endDate)
+        (:endTime <= p.startDate OR :startTime >= pgi.endDate)
     """)
     fun existsOverlappingPlan(
         @Param("memberId") memberId: Long,
