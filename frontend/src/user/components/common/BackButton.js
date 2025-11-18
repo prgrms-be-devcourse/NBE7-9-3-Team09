@@ -26,3 +26,4 @@ const BackButton = ({ onClick, text = "← 뒤로가기" }) => {
 
 export default BackButton;
 
+
